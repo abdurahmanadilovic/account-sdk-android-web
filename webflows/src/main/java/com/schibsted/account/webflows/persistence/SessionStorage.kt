@@ -130,7 +130,7 @@ internal class EncryptedSharedPrefsStorage(context: Context) : SessionStorage {
     }
 
     companion object {
-        const val PREFERENCE_FILENAME = "SCHACC_TOKENS"
+        private const val PREFERENCE_FILENAME = "SCHACC_TOKENS"
     }
 }
 
@@ -159,6 +159,6 @@ internal class SharedPrefsStorage(context: Context) : SessionStorage {
     fun getJsonForClientId(clientId: String): String? = prefs.getString(clientId, null)
 
     companion object {
-        const val PREFERENCE_FILENAME = "SCHACC_TOKENS_SHARED_PREFS"
+        private const val PREFERENCE_FILENAME = "SCHACC_TOKENS_SHARED_PREFS"
     }
 }
