@@ -7,6 +7,7 @@ import com.schibsted.account.testutil.Fixtures
 import com.schibsted.account.testutil.assertRight
 import com.schibsted.account.webflows.persistence.EncryptedSharedPrefsStorage
 import com.schibsted.account.webflows.persistence.MigratingSessionStorage
+import com.schibsted.account.webflows.persistence.SharedPrefsStorage
 import com.schibsted.account.webflows.persistence.StorageReadCallback
 import com.schibsted.account.webflows.user.StoredUserSession
 import com.schibsted.account.webflows.util.Either
@@ -24,10 +25,17 @@ class MigratingStorageTest {
 
     @Test
     fun testMigratingStorageReadsEncryptedStorage() {
-        val encryptedStorage: EncryptedSharedPrefsStorage = mockk()
-        val mockContext = getMockContext(emptyStorage = true)
+        val encryptedStorage: EncryptedSharedPrefsStorage = mockk {
+            every {
+                get(any(), any())
+            } answers {
+                val callback = secondArg<StorageReadCallback>()
+                callback(Either.Right(userSession))
+            }
+        }
+        val sharedPrefsStorage: SharedPrefsStorage = mockk()
+        val migratingStorage = MigratingSessionStorage(sharedPrefsStorage, encryptedStorage)
 
-        val migratingStorage = MigratingSessionStorage(mockContext, encryptedStorage)
         every {
             encryptedStorage.get(any(), any())
         } answers {
@@ -45,8 +53,8 @@ class MigratingStorageTest {
     @Test
     fun testMigratingStorageReadsFromNewStorage() {
         val encryptedStorage: EncryptedSharedPrefsStorage = mockk()
-        val mockContext = getMockContext(emptyStorage = false)
-        val migratingStorage = MigratingSessionStorage(mockContext, encryptedStorage)
+        val sharedPrefsStorage: SharedPrefsStorage = mockk()
+        val migratingStorage = MigratingSessionStorage(sharedPrefsStorage, encryptedStorage)
 
         migratingStorage.get(Fixtures.clientConfig.clientId) {
             it.assertRight { storedUserSession ->
